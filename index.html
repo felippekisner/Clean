@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Cadastro de Clientes</title>
+</head>
+<body>
+    <h1>Cadastro de Clientes</h1>
+    <form id="clientForm">
+        <label for="clientName">Nome do Cliente:</label>
+        <input type="text" id="clientName" required>
+        <button type="submit">Cadastrar Cliente</button>
+    </form>
+
+    <h1>Cadastro de Locais</h1>
+<form id="locationForm">
+  <label for="location">Endereço do Local:</label>
+  <input type="text" id="location" required />
+  <button type="submit">Cadastrar Local</button>
+</form>
+
+    <h2>Clientes Cadastrados</h2>
+    <table id="clientTable">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Valor Total dos Serviços</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <button onclick="window.location.href='nota.html'">Gerar Nota</button>
+
+    <script>
+        const clientForm = document.getElementById('clientForm');
+        const clientTableBody = document.getElementById('clientTable').getElementsByTagName('tbody')[0];
+
+        function loadClients() {
+            const clients = JSON.parse(localStorage.getItem('clients')) || [];
+            clients.forEach(client => {
+                const row = clientTableBody.insertRow();
+                const cellName = row.insertCell(0);
+                const cellTotal = row.insertCell(1);
+                cellName.textContent = client.name;
+                cellTotal.textContent = `R$ ${client.totalValue ? client.totalValue.toFixed(2) : '0,00'}`;
+            });
+        }
+        
+
+        clientForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const clientName = document.getElementById('clientName').value;
+            const clients = JSON.parse(localStorage.getItem('clients')) || [];
+            clients.push({ name: clientName, totalValue: 0 });
+            localStorage.setItem('clients', JSON.stringify(clients));
+            location.reload();
+        });
+        // Cadastro de locais
+document.getElementById('locationForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const location = document.getElementById('location').value;
+  const locations = JSON.parse(localStorage.getItem('locations')) || [];
+  locations.push(location);
+  localStorage.setItem('locations', JSON.stringify(locations));
+  alert('Local cadastrado!');
+  this.reset();
+});
+
+
+        loadClients();
+    </script>
+</body>
+</html>
