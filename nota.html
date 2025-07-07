@@ -78,13 +78,13 @@
 
     // Ordem de serviço: inicial 260 e incrementa a cada nova nota
     function setOrderNumber() {
-      let orderNumber = parseInt(localStorage.getItem('orderNumber')) || 260;
+      let orderNumber = parseInt(localStorage.getItem('orderNumber')) || 261;
       document.getElementById('orderNumber').textContent = `Ordem de Serviço nº ${orderNumber}`;
     }
 
     // Incrementar número da ordem e salvar
     function incrementOrderNumber() {
-      let orderNumber = parseInt(localStorage.getItem('orderNumber')) || 260;
+      let orderNumber = parseInt(localStorage.getItem('orderNumber')) || 261;
       orderNumber++;
       localStorage.setItem('orderNumber', orderNumber);
     }
