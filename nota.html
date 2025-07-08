@@ -3,181 +3,161 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <link rel="stylesheet" href="style.css" />
   <title>Gerar Nota</title>
   <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+    <link rel="stylesheet" href="style.css" />
+
 </head>
 <body>
+
   <h1 id="orderNumber"></h1>
   <p>Data: <input type="date" id="serviceDate" required></p>
 
-  <div class="container">
-    <div class="left-column">
-      <h2>Prestador de Serviço</h2>
-      <p>Clean Express Higienização e Impermeabilização<br>
-         Rua Victório Pedron, 274 – Dolorata – Rio dos Cedros – SC<br>
-         CEP: 89121-000<br>
-         E-mail: cleanexpressadm@gmail.com<br>
-         CNPJ: 45.110.276/0001-60<br>
-         Telefone: (47) 99602-8397</p>
-    </div>
-
-    <div class="right-column">
-      <h2>Cliente</h2>
-      <select id="clientSelect" required>
-        <option value="">Selecione um cliente</option>
-      </select>
-      <p id="clientInfo"></p>
-    </div>
-  </div>
+  <h2>Cliente</h2>
+  <select id="clientSelect" required>
+    <option value="">Selecione um cliente</option>
+  </select>
 
   <h2>Local do Serviço</h2>
-<select id="serviceLocation" required>
-  <option value="">Selecione o local</option>
-</select>
-
+  <select id="serviceLocation" required>
+    <option value="">Selecione o local</option>
+  </select>
 
   <h2>Serviços</h2>
   <form id="serviceForm">
-    <label for="serviceDescription">Descrição:</label>
     <select id="serviceDescription" required></select>
-
-    <label for="quantity">Quantidade:</label>
     <input type="number" id="quantity" value="1" min="1" required>
     <button type="submit">Adicionar Serviço</button>
   </form>
 
-  <h2>Serviços Adicionados</h2>
   <table id="serviceTable">
     <thead>
       <tr>
         <th>Descrição</th>
-        <th>Quantidade</th>
-        <th>Valor Unitário</th>
-        <th>Valor Total</th>
+        <th>Qtd</th>
+        <th>Unitário</th>
+        <th>Total</th>
       </tr>
     </thead>
     <tbody></tbody>
   </table>
+
   <h3 id="totalValue">Total Geral: R$ 0,00</h3>
-
   <button id="generateInvoice">Gerar Nota em PDF</button>
-
-  <div id="pdfContainer" style="display:none;"></div>
 
   <script>
     // Adicionar cliente Blupartners se não existir
     function addPreRegisteredClient() {
       const clients = JSON.parse(localStorage.getItem('clients')) || [];
-      const exists = clients.some(c => c.name === "Blupartners Assessoria Comercial e Administrativa LTDA");
-      if (!exists) {
+      if (!clients.some(c => c.name === "Blupartners Assessoria Comercial e Administrativa LTDA")) {
         clients.push({ name: "Blupartners Assessoria Comercial e Administrativa LTDA", totalValue: 0 });
         localStorage.setItem('clients', JSON.stringify(clients));
       }
     }
 
-    // Ordem de serviço: inicial 260 e incrementa a cada nova nota
+    // Set ordem de serviço a partir de 261
     function setOrderNumber() {
-      let orderNumber = parseInt(localStorage.getItem('orderNumber')) || 261;
-      document.getElementById('orderNumber').textContent = `Ordem de Serviço nº ${orderNumber}`;
+      let num = parseInt(localStorage.getItem('orderNumber'));
+      if (!num || num < 261) num = 261;
+      localStorage.setItem('orderNumber', num);
+      document.getElementById('orderNumber').textContent = `Ordem de Serviço nº ${num}`;
     }
 
-    // Incrementar número da ordem e salvar
+    // Incrementar
     function incrementOrderNumber() {
-      let orderNumber = parseInt(localStorage.getItem('orderNumber')) || 261;
-      orderNumber++;
-      localStorage.setItem('orderNumber', orderNumber);
+      let num = parseInt(localStorage.getItem('orderNumber')) || 261;
+      localStorage.setItem('orderNumber', ++num);
     }
 
-    const clientSelect = document.getElementById('clientSelect');
-    const serviceDescription = document.getElementById('serviceDescription');
-    const serviceForm = document.getElementById('serviceForm');
-    const serviceTableBody = document.querySelector('#serviceTable tbody');
-    const totalValue = document.getElementById('totalValue');
-    let total = 0;
-
+    // Carregar clientes
     function loadClients() {
       const clients = JSON.parse(localStorage.getItem('clients')) || [];
-      clients.forEach((client, index) => {
+      const select = document.getElementById('clientSelect');
+      clients.forEach((c, i) => {
         const option = document.createElement('option');
-        option.value = index;
-        option.textContent = client.name;
-        clientSelect.appendChild(option);
+        option.value = i;
+        option.textContent = c.name;
+        select.appendChild(option);
       });
     }
+
+    // Carregar locais
     function loadLocations() {
-  const locations = JSON.parse(localStorage.getItem('locations')) || [];
-  locations.forEach(loc => {
-    const option = document.createElement('option');
-    option.value = loc;
-    option.textContent = loc;
-    document.getElementById('serviceLocation').appendChild(option);
-  });
-}
+      const locations = JSON.parse(localStorage.getItem('locations')) || [];
+      const select = document.getElementById('serviceLocation');
+      locations.forEach(loc => {
+        const option = document.createElement('option');
+        option.value = loc;
+        option.textContent = loc;
+        select.appendChild(option);
+      });
+    }
 
-
-
+    // Carregar serviços
     function loadServices() {
       const services = [
         { name: "Canto alemão - sem cadeira", price: 110.00 },
-    { name: "Canto alemão - 2 cadeiras", price: 130.00 },
-    { name: "Sofá 2 lugares sem chaise", price: 130.00 },
-    { name: "Sofá 2 lugares com chaise até 1,40m", price: 160.00 },
-    { name: "Sofá 2 lugares com chaise até 1,80m", price: 180.00 },
-    { name: "Sofá cama - até 1,40m", price: 150.00 },
-    { name: "Cadeira - só assento", price: 10.00 },
-    { name: "Cadeira - assento e encosto", price: 16.00 },
-    { name: "Poltrona do papai", price: 120.00 },
-    { name: "Poltrona simples", price: 80.00 },
-    { name: "Colchão box com base", price: 140.00 },
-    { name: "Colchão box com base - 2 lados", price: 170.00 },
-    { name: "Colchão box sem base", price: 110.00 },
-    { name: "Colchão box de solteiro com base", price: 120.00 },
-    { name: "Colchão box de solteiro sem base", price: 90.00 },
-    { name: "Colchão box de solteiro dois lados", price: 120.00 },
-    { name: "Banqueta - só assento", price: 10.00 },
-    { name: "Banqueta - assento e encosto", price: 12.00 },
-    { name: "Cabeceira casal", price: 40.00 },
-    { name: "Cabeceira solteiro", price: 30.00 },
-    { name: "Almofada 30x30", price: 8.00 },
-    { name: "Almofada 40x40", price: 10.00 },
-    { name: "Sofá e colchão (Navegantes)", price: 430.00 },
-    { name: "Sofá, colchão e 7 banquetas (Navegantes)", price: 550.00 },
-    { name: "Tapete", price: 75.00 },
-    { name: "Puff (pequeno)", price: 20.00 },
-    { name: "Metro do carpete", price: 20.00 }
+        { name: "Canto alemão - 2 cadeiras", price: 130.00 },
+        { name: "Sofá 2 lugares sem chaise", price: 130.00 },
+        { name: "Sofá 2 lugares com chaise até 1,40m", price: 160.00 },
+        { name: "Sofá 2 lugares com chaise até 1,80m", price: 180.00 },
+        { name: "Sofá cama - até 1,40m", price: 150.00 },
+        { name: "Cadeira - só assento", price: 10.00 },
+        { name: "Cadeira - assento e encosto", price: 16.00 },
+        { name: "Poltrona do papai", price: 120.00 },
+        { name: "Poltrona simples", price: 80.00 },
+        { name: "Colchão box com base", price: 140.00 },
+        { name: "Colchão box com base - 2 lados", price: 170.00 },
+        { name: "Colchão box sem base", price: 110.00 },
+        { name: "Colchão solteiro com base", price: 120.00 },
+        { name: "Colchão solteiro sem base", price: 90.00 },
+        { name: "Colchão solteiro 2 lados", price: 120.00 },
+        { name: "Banqueta - só assento", price: 10.00 },
+        { name: "Banqueta - assento e encosto", price: 12.00 },
+        { name: "Cabeceira casal", price: 40.00 },
+        { name: "Cabeceira solteiro", price: 30.00 },
+        { name: "Almofada 30x30", price: 8.00 },
+        { name: "Almofada 40x40", price: 10.00 },
+        { name: "Sofá e colchão (Navegantes)", price: 430.00 },
+        { name: "Sofá, colchão e 7 banquetas (Navegantes)", price: 550.00 },
+        { name: "Tapete", price: 75.00 },
+        { name: "Puff (pequeno)", price: 20.00 },
+        { name: "Metro do carpete", price: 20.00 }
       ];
+      const select = document.getElementById('serviceDescription');
       services.forEach(s => {
         const option = document.createElement('option');
         option.value = JSON.stringify(s);
         option.textContent = `${s.name} - R$ ${s.price.toFixed(2)}`;
-        serviceDescription.appendChild(option);
+        select.appendChild(option);
       });
     }
 
-    serviceForm.addEventListener('submit', function (e) {
+    let total = 0;
+    const tableBody = document.querySelector('#serviceTable tbody');
+    document.getElementById('serviceForm').addEventListener('submit', e => {
       e.preventDefault();
-      const selected = JSON.parse(serviceDescription.value);
+      const selected = JSON.parse(document.getElementById('serviceDescription').value);
       const quantity = parseInt(document.getElementById('quantity').value);
-      const totalItem = quantity * selected.price;
+      const totalItem = selected.price * quantity;
 
-      const row = serviceTableBody.insertRow();
+      const row = tableBody.insertRow();
       row.insertCell(0).textContent = selected.name;
       row.insertCell(1).textContent = quantity;
       row.insertCell(2).textContent = `R$ ${selected.price.toFixed(2)}`;
       row.insertCell(3).textContent = `R$ ${totalItem.toFixed(2)}`;
 
       total += totalItem;
-      totalValue.textContent = `Total Geral: R$ ${total.toFixed(2)}`;
-      serviceForm.reset();
+      document.getElementById('totalValue').textContent = `Total Geral: R$ ${total.toFixed(2)}`;
+      e.target.reset();
     });
 
     document.getElementById('generateInvoice').addEventListener('click', () => {
-      const clientIndex = clientSelect.value;
+      const clientIndex = document.getElementById('clientSelect').value;
       const clients = JSON.parse(localStorage.getItem('clients')) || [];
       const location = document.getElementById('serviceLocation').value;
       const date = document.getElementById('serviceDate').value;
-      const orderNumber = parseInt(localStorage.getItem('orderNumber')) || 260;
+      const orderNumber = localStorage.getItem('orderNumber');
 
       if (!clientIndex || !location || !date) {
         alert("Preencha todos os campos!");
@@ -189,112 +169,116 @@
       localStorage.setItem('clients', JSON.stringify(clients));
 
       let rows = '';
-      [...serviceTableBody.rows].forEach(r => {
+      [...tableBody.rows].forEach(r => {
         rows += `<tr>
-            <td>${r.cells[0].textContent}</td>
-            <td>${r.cells[1].textContent}</td>
-            <td>${r.cells[2].textContent}</td>
-            <td>${r.cells[3].textContent}</td>
-          </tr>`;
+          <td>${r.cells[0].textContent}</td>
+          <td>${r.cells[1].textContent}</td>
+          <td>${r.cells[2].textContent}</td>
+          <td>${r.cells[3].textContent}</td>
+        </tr>`;
       });
 
       const html = `
-      <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 1000px; margin: 0 auto; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
-
-  
-  <!-- LOGO -->
-  <div style="text-align: center; margin-bottom: 20px;">
-    <img src="clean.png" style="max-width: 250px;">
-  </div>
-
-  <!-- CABEÇALHO COM ORDEM E DATA -->
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-    <div style="font-size: 18px; font-weight: bold;">Ordem de Serviço: ${orderNumber}</div>
-    <div><strong>Data:</strong> ${new Date(date).toLocaleDateString('pt-BR')}</div>
-  </div>
-
-  <!-- Prestador e Cliente -->
-  <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-    <div style="width: 49%; border: 1px solid green; padding: 5px;">
-      <div style="background: #d5ead2; font-weight: bold;">Prestador de Serviço</div>
-      <p><strong>Clean Express Higienização e Impermeabilização</strong><br>
-      Rua Victório Pedron, 274 – Dolorata – Rio dos Cedros – SC<br>
-      CEP: 89121-000<br>
-      E-mail: cleanexpressadm@gmail.com<br>
-      CNPJ: 45.110.276/0001-60<br>
-      Telefone: (47) 99602-8397</p>
+  <div style="font-family: Arial, sans-serif; padding: 0; margin: 0 auto; width: 100%; max-width: 700px;">
+    <div style="text-align: center; margin-bottom: 10px;">
+      <img src="clean.png" style="max-width: 220px;">
     </div>
 
-    <div style="width: 49%; border: 1px solid green; padding: 5px;">
-      <div style="background: #d5ead2; font-weight: bold;">Cliente</div>
-      <p><strong>${client.name}</strong><br>
-      R.Coronel Feddersen, 1091 - Itoupava Seca, Blumenau - SC, CEP: 89030-400<br>
-      CNPJ: 95.816.468/0001-65<br>
-      IE: ISENTO<br>
-      Telefone: (47) 3037-6635</p>
+    <div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 10px;">
+      <div><strong>Ordem de Serviço:</strong> ${orderNumber}</div>
+      <div><strong>Data:</strong> ${new Date(date).toLocaleDateString('pt-BR')}</div>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; font-size: 12px;">
+      <div style="flex: 1; border: 1px solid green; padding: 5px;">
+        <div style="background: #d5ead2; font-weight: bold;">Prestador de Serviço</div>
+        <p><strong>Clean Express Higienização e Impermeabilização</strong><br>
+        Rua Victório Pedron, 274 – Dolorata – Rio dos Cedros – SC<br>
+        CEP: 89121-000<br>
+        E-mail: cleanexpressadm@gmail.com<br>
+        CNPJ: 45.110.276/0001-60<br>
+        Telefone: (47) 99602-8397</p>
+      </div>
+      <div style="flex: 1; border: 1px solid green; padding: 5px;">
+        <div style="background: #d5ead2; font-weight: bold;">Cliente</div>
+        <p><strong>${client.name}</strong><br>
+        R.Coronel Feddersen, 1091 - Itoupava Seca, Blumenau - SC, CEP: 89030-400<br>
+        CNPJ: 95.816.468/0001-65<br>
+        IE: ISENTO<br>
+        Telefone: (47) 3037-6635</p>
+      </div>
+    </div>
+
+    <div style="background: #d5ead2; border: 1px solid green; padding: 5px; font-weight: bold; font-size: 13px;">
+      Local da prestação do serviço:
+    </div>
+    <p style="margin-bottom: 10px; font-size: 13px;">${location}</p>
+
+    <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 10px;">
+      <thead>
+        <tr style="background: #d5ead2;">
+          <th style="border: 1px solid green; padding: 4px;">Descrição</th>
+          <th style="border: 1px solid green; padding: 4px;">Qtd</th>
+          <th style="border: 1px solid green; padding: 4px;">Unitário</th>
+          <th style="border: 1px solid green; padding: 4px;">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="3" style="border: 1px solid green; padding: 4px; font-weight: bold;">TOTAL</td>
+          <td style="border: 1px solid green; padding: 4px; font-weight: bold;">R$ ${total.toFixed(2)}</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <div style="font-size: 13px; margin-top: 20px;">
+      <p>À disposição!<br><br><strong>Roberto Kisner</strong></p>
+      <p>Rio dos Cedros, ${new Date(date).toLocaleDateString('pt-BR')}</p>
     </div>
   </div>
+`;
 
-  <!-- Local do serviço -->
-  <div style="background: #d5ead2; border: 1px solid green; padding: 5px; font-weight: bold; margin-bottom: 5px;">
-    Local da prestação do serviço:
-  </div>
-  <p style="margin-bottom: 15px;">${location}</p>
+const container = document.createElement('div');
+container.innerHTML = html;
+document.body.appendChild(container);
 
-  <!-- Tabela de serviços -->
-  <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-    <thead>
-      <tr style="background: #d5ead2;">
-        <th style="border: 1px solid green; padding: 6px;">Descrição</th>
-        <th style="border: 1px solid green; padding: 6px;">Quantidade</th>
-        <th style="border: 1px solid green; padding: 6px;">Valor Unitário</th>
-        <th style="border: 1px solid green; padding: 6px;">Valor Total</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${rows}
-    </tbody>
-    <tfoot>
-      <tr>
-        <td colspan="3" style="border: 1px solid green; padding: 6px; font-weight: bold;">TOTAL</td>
-        <td style="border: 1px solid green; padding: 6px; font-weight: bold;">R$ ${total.toFixed(2)}</td>
-      </tr>
-    </tfoot>
-  </table>
-
-    <div style="page-break-inside: avoid; margin-top: 40px; padding-bottom: 100px;">
-    <p>À disposição!<br><br><strong>Roberto Kisner</strong></p>
-    <p>Rio dos Cedros, ${new Date(date).toLocaleDateString('pt-BR')}</p>
-  </div>
+html2pdf().from(container).set({
+  margin: [10, 10, 15, 10], // top, right, bottom, left (em mm)
+  filename: `Nota-${client.name}.pdf`,
+  html2canvas: {
+    scale: 2,
+    scrollX: 0,
+    scrollY: 0,
+    useCORS: true
+  },
+  jsPDF: {
+    unit: 'mm',
+    format: 'a4',
+    orientation: 'portrait'
+  },
+  pagebreak: {
+    mode: ['avoid-all', 'css', 'legacy']
+  }
+}).save().then(() => {
+  document.body.removeChild(container);
+  incrementOrderNumber();
+  setOrderNumber();
+});
 
 
 
-</div>
+});
 
-      `;
-
-      const container = document.createElement('div');
-      container.innerHTML = html;
-      document.body.appendChild(container);
-
-      html2pdf().from(container).set({
-        margin: 10,
-        filename: `Nota-${client.name}.pdf`,
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      }).save().then(() => {
-        document.body.removeChild(container);
-        incrementOrderNumber();
-        setOrderNumber();
-      });
-    });
-
-    // Executar carregamentos
+    // Execução
     addPreRegisteredClient();
     setOrderNumber();
-    loadLocations();
     loadClients();
+    loadLocations();
     loadServices();
   </script>
+
 </body>
 </html>
