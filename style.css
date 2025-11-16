@@ -1,69 +1,184 @@
+/* style.css */
+
+/* 🎨 Variáveis de Cor */
+:root {
+    --color-primary-green: #2ecc71; /* Verde Vibrante */
+    --color-light-green: #e6f7ee; /* Verde Claro para Backgrounds */
+    --color-white: #ffffff;
+    --color-text-dark: #34495e; /* Texto Escuro */
+    --color-border-light: #bdc3c7; /* Borda Suave */
+}
+
+/* 🔄 Reset Básico */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
 
 body {
-  font-family: Arial, sans-serif;
-  margin: 20px;
-  background: #f2f2f2;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--color-light-green); /* Fundo suave */
+    color: var(--color-text-dark);
+    line-height: 1.6;
+    padding: 20px;
 }
 
-h1, h2 {
-  color: #2e7d32;
+/* 📝 Estilo de Conteúdo Principal */
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    background-color: var(--color-white);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
+/* Aplicando o container ao body principal, pois o seu HTML não usa uma div container */
+body > h1:first-child, body > h2:first-child {
+    /* Garante que o primeiro elemento dentro do body tenha margem superior, se for necessário. */
+    margin-top: 0;
+}
+
+/* ✒️ Tipografia */
+h1, h2, h3 {
+    color: var(--color-primary-green);
+    margin-top: 25px;
+    margin-bottom: 15px;
+    border-bottom: 2px solid var(--color-light-green);
+    padding-bottom: 5px;
+}
+
+h1 {
+    font-size: 2.2em;
+    text-align: center;
+}
+
+h2 {
+    font-size: 1.6em;
+}
+
+h3 {
+    font-size: 1.3em;
+}
+
+/* 🕹️ Formulário e Inputs */
 form {
-  margin-bottom: 20px;
-}
-select option {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  padding: 5px;
-  line-height: 1.5;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+    padding: 15px;
+    margin-bottom: 20px;
+    background-color: var(--color-light-green);
+    border-radius: 8px;
 }
 
+input[type="text"],
+input[type="number"],
+input[type="date"],
+select {
+    padding: 10px;
+    border: 1px solid var(--color-border-light);
+    border-radius: 5px;
+    font-size: 1em;
+    flex-grow: 1; /* Permite que inputs se expandam */
+    min-width: 150px;
+}
 
 label {
-  display: block;
-  margin-top: 10px;
+    font-weight: bold;
+    color: var(--color-text-dark);
+    margin-right: 5px;
 }
 
-input[type="text"], input[type="number"], input[type="date"], select {
-  padding: 6px;
-  margin-top: 5px;
-  width: 100%;
-  max-width: 400px;
-  box-sizing: border-box;
-}
-
+/* 🟢 Botões Modernos */
 button {
-  background: #2e7d32;
-  color: white;
-  border: none;
-  padding: 10px 16px;
-  margin-top: 10px;
-  cursor: pointer;
-  border-radius: 4px;
+    background-color: var(--color-primary-green);
+    color: var(--color-white);
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    box-shadow: 0 2px 4px rgba(46, 204, 113, 0.4); /* Sombra suave verde */
 }
 
 button:hover {
-  background: #1b5e20;
+    background-color: #27ae60; /* Verde um pouco mais escuro no hover */
+    transform: translateY(-1px); /* Efeito de elevação sutil */
 }
 
+button:active {
+    transform: translateY(1px);
+}
+
+/* 📊 Tabelas Estilizadas */
 table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-  background: white;
-}
-
-table, th, td {
-  border: 1px solid #ddd;
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: var(--color-white);
+    border: 1px solid var(--color-border-light);
+    border-radius: 8px;
+    overflow: hidden; /* Garante que bordas arredondadas funcionem */
 }
 
 th, td {
-  padding: 8px;
-  text-align: left;
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--color-border-light);
 }
 
-th {
-  background: #d5ead2;
+thead th {
+    background-color: var(--color-primary-green);
+    color: var(--color-white);
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+tbody tr:nth-child(even) {
+    background-color: var(--color-light-green); /* Listras claras para melhor leitura */
+}
+
+tbody tr:hover {
+    background-color: #d5e9d2; /* Hover mais evidente */
+}
+
+/* 💰 Destaque de Total */
+#totalValue {
+    text-align: right;
+    font-size: 1.5em;
+    color: #c0392b; /* Um toque de vermelho para destaque financeiro */
+    font-weight: bold;
+    margin-top: 20px;
+    padding: 10px 0;
+}
+
+/* 📱 Responsividade Básica */
+@media (max-width: 600px) {
+    body {
+        padding: 10px;
+    }
+    .container {
+        padding: 15px;
+    }
+    form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    select,
+    button {
+        width: 100%;
+        margin-top: 5px;
+    }
+    th, td {
+        padding: 8px 10px;
+        font-size: 0.9em;
+    }
 }
