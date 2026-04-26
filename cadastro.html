@@ -1,51 +1,379 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <link rel="stylesheet" href="style.css"/>
-  <title>Cadastro de Locais e Serviços</title>
+  <meta charset="UTF-8">
+  <title>Clean Express – Cadastros</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Cadastro de Locais</h1>
-  <form id="locationForm">
-    <label for="location">Endereço do Local:</label>
-    <input type="text" id="location" required />
-    <button type="submit">Cadastrar Local</button>
-  </form>
 
-  <h1>Cadastro de Serviços</h1>
-  <form id="serviceForm">
-    <label for="serviceName">Descrição:</label>
-    <input type="text" id="serviceName" required />
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <a href="index.html" class="sidebar-logo">CE</a>
+  <a href="index.html" class="nav-item">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+    <span class="nav-tooltip">Gerar Nota</span>
+  </a>
+  <a href="cadastro.html" class="nav-item active">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
+    <span class="nav-tooltip">Cadastros</span>
+  </a>
+</aside>
 
-    <label for="servicePrice">Preço (R$):</label>
-    <input type="number" id="servicePrice" step="0.01" required />
+<div class="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">Cadastros</div>
+      <div class="topbar-sub">Gerencie clientes, locais e serviços</div>
+    </div>
+    <div class="topbar-badge">Administração</div>
+  </div>
 
-    <button type="submit">Cadastrar Serviço</button>
-  </form>
+  <div class="page-content">
 
-  <script>
-    document.getElementById('locationForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const location = document.getElementById('location').value;
-      const locations = JSON.parse(localStorage.getItem('locations')) || [];
-      locations.push(location);
-      localStorage.setItem('locations', JSON.stringify(locations));
-      alert('Local cadastrado!');
-      this.reset();
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon green">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        </div>
+        <div>
+          <div class="stat-value" id="statClients">–</div>
+          <div class="stat-label">Clientes</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon dark">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        </div>
+        <div>
+          <div class="stat-value" id="statLocations">–</div>
+          <div class="stat-label">Locais</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon green">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        </div>
+        <div>
+          <div class="stat-value" id="statServices">–</div>
+          <div class="stat-label">Serviços</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ CLIENTES ════════════════════ -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+        </div>
+        <div style="flex:1">
+          <div class="card-title">Clientes</div>
+          <div class="card-subtitle">Cadastre novos clientes</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="form-grid" style="margin-bottom:16px">
+          <div class="form-group full">
+            <label>Nome do Cliente</label>
+            <input type="text" id="clientName" placeholder="Nome completo ou empresa">
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="addClient()">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
+          Cadastrar Cliente
+        </button>
+
+        <div style="margin-top:24px">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Total Gasto</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="clientTableBody">
+                <tr><td colspan="3"><div class="empty-state"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg><p>Nenhum cliente ainda</p></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ LOCAIS ════════════════════ -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        </div>
+        <div style="flex:1">
+          <div class="card-title">Locais de Serviço</div>
+          <div class="card-subtitle">Endereços onde os serviços são realizados</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="form-grid" style="margin-bottom:16px">
+          <div class="form-group full">
+            <label>Endereço</label>
+            <input type="text" id="locationAddr" placeholder="Rua, número, bairro, cidade – UF">
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="addLocation()">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
+          Cadastrar Local
+        </button>
+
+        <div style="margin-top:24px">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Endereço</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="locationTableBody">
+                <tr><td colspan="2"><div class="empty-state"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg><p>Nenhum local ainda</p></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ SERVIÇOS ════════════════════ -->
+    <div class="card" style="margin-bottom:40px">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        </div>
+        <div style="flex:1">
+          <div class="card-title">Serviços</div>
+          <div class="card-subtitle">Tipos de serviço e preços</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="form-grid" style="margin-bottom:16px">
+          <div class="form-group">
+            <label>Descrição do Serviço</label>
+            <input type="text" id="serviceName" placeholder="Ex: Sofá 3 lugares">
+          </div>
+          <div class="form-group">
+            <label>Preço (R$)</label>
+            <input type="number" id="servicePrice" step="0.01" min="0" placeholder="0,00">
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="addService()">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
+          Cadastrar Serviço
+        </button>
+
+        <div style="margin-top:24px">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Descrição</th>
+                  <th>Preço</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="serviceTableBody">
+                <tr><td colspan="3"><div class="empty-state"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg><p>Nenhum serviço cadastrado ainda</p></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+  <span id="toastMsg">Ação realizada!</span>
+</div>
+
+<script type="module">
+import { db } from './firebase-config.js';
+import {
+  collection, addDoc, getDocs, deleteDoc, doc, writeBatch
+} from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+
+// ── TOAST ──
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── CLIENTES ──
+async function loadClients() {
+  const tbody = document.getElementById('clientTableBody');
+  tbody.innerHTML = '';
+  const snap = await getDocs(collection(db, 'clients'));
+  document.getElementById('statClients').textContent = snap.size;
+  if (snap.empty) {
+    tbody.innerHTML = `<tr><td colspan="3"><div class="empty-state"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg><p>Nenhum cliente ainda</p></div></td></tr>`;
+    return;
+  }
+  snap.forEach(d => {
+    const data = d.data();
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${data.name}</td>
+      <td>R$ ${(data.totalValue || 0).toFixed(2)}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteItem('clients','${d.id}',this)">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+        Excluir
+      </button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+window.addClient = async function() {
+  const name = document.getElementById('clientName').value.trim();
+  if (!name) { showToast('Informe o nome do cliente!', 'error'); return; }
+  await addDoc(collection(db, 'clients'), { name, totalValue: 0 });
+  document.getElementById('clientName').value = '';
+  showToast('Cliente cadastrado!');
+  loadClients();
+};
+
+// ── LOCAIS ──
+async function loadLocations() {
+  const tbody = document.getElementById('locationTableBody');
+  tbody.innerHTML = '';
+  const snap = await getDocs(collection(db, 'locations'));
+  document.getElementById('statLocations').textContent = snap.size;
+  if (snap.empty) {
+    tbody.innerHTML = `<tr><td colspan="2"><div class="empty-state"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg><p>Nenhum local ainda</p></div></td></tr>`;
+    return;
+  }
+  snap.forEach(d => {
+    const data = d.data();
+    if (!data.address) return;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${data.address}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteItem('locations','${d.id}',this)">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+        Excluir
+      </button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+window.addLocation = async function() {
+  const addr = document.getElementById('locationAddr').value.trim();
+  if (!addr) { showToast('Informe o endereço!', 'error'); return; }
+  await addDoc(collection(db, 'locations'), { address: addr });
+  document.getElementById('locationAddr').value = '';
+  showToast('Local cadastrado!');
+  loadLocations();
+};
+
+// ── SERVIÇOS PADRÃO ──
+const DEFAULT_SERVICES = [
+  { name: "Canto alemão - sem cadeira", price: 110.00 },
+  { name: "Canto alemão - 2 cadeiras", price: 130.00 },
+  { name: "Sofá 2 lugares sem chaise", price: 130.00 },
+  { name: "Sofá 3 lugares sem chaise", price: 160.00 },
+  { name: "Sofá 2 lugares com chaise até 1,40m", price: 160.00 },
+  { name: "Sofá 2 lugares com chaise até 1,80m", price: 180.00 },
+  { name: "Sofá cama - até 1,40m", price: 150.00 },
+  { name: "Cadeira - só assento", price: 10.00 },
+  { name: "Cadeira - assento e encosto", price: 16.00 },
+  { name: "Poltrona do papai", price: 120.00 },
+  { name: "Poltrona simples", price: 80.00 },
+  { name: "Colchão box com base", price: 140.00 },
+  { name: "Colchão box com base - 2 lados", price: 170.00 },
+  { name: "Colchão box sem base", price: 110.00 },
+  { name: "Colchão solteiro com base", price: 120.00 },
+  { name: "Colchão solteiro sem base", price: 90.00 },
+  { name: "Colchão solteiro 2 lados", price: 120.00 },
+  { name: "Banqueta - só assento", price: 10.00 },
+  { name: "Banqueta - assento e encosto", price: 12.00 },
+  { name: "Cabeceira casal", price: 40.00 },
+  { name: "Cabeceira solteiro", price: 30.00 },
+  { name: "Almofada 30x30", price: 8.00 },
+  { name: "Almofada 40x40", price: 10.00 },
+  { name: "Sofá e colchão (Navegantes)", price: 430.00 },
+  { name: "Sofá, colchão e 7 banquetas (Navegantes)", price: 550.00 },
+  { name: "Tapete", price: 75.00 },
+  { name: "Puff (pequeno)", price: 20.00 },
+  { name: "Metro do carpete", price: 20.00 }
+];
+
+// ── SERVIÇOS ──
+async function loadServices() {
+  const tbody = document.getElementById('serviceTableBody');
+  tbody.innerHTML = '';
+  let snap = await getDocs(collection(db, 'services'));
+
+  // Se estiver vazio, importa os padrões via batch (atômico, sem limite de sequência)
+  if (snap.empty) {
+    showToast('Importando serviços padrão...', 'success');
+    const batch = writeBatch(db);
+    DEFAULT_SERVICES.forEach(s => {
+      batch.set(doc(collection(db, 'services')), s);
     });
+    await batch.commit();
+    snap = await getDocs(collection(db, 'services'));
+  }
 
-    document.getElementById('serviceForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const name = document.getElementById('serviceName').value;
-      const price = parseFloat(document.getElementById('servicePrice').value);
-      const services = JSON.parse(localStorage.getItem('services')) || [];
-      services.push({ name, price });
-      localStorage.setItem('services', JSON.stringify(services));
-      alert('Serviço cadastrado!');
-      this.reset();
-    });
-  </script>
+  document.getElementById('statServices').textContent = snap.size;
+  snap.forEach(d => {
+    const s = d.data();
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${s.name}</td>
+      <td>R$ ${parseFloat(s.price).toFixed(2)}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteItem('services','${d.id}',this)">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+        Excluir
+      </button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+window.addService = async function() {
+  const name = document.getElementById('serviceName').value.trim();
+  const price = parseFloat(document.getElementById('servicePrice').value);
+  if (!name || isNaN(price) || price < 0) { showToast('Preencha nome e preço corretamente!', 'error'); return; }
+  await addDoc(collection(db, 'services'), { name, price });
+  document.getElementById('serviceName').value = '';
+  document.getElementById('servicePrice').value = '';
+  showToast('Serviço cadastrado!');
+  loadServices();
+};
+
+// ── DELETE ──
+window.deleteItem = async function(col, id, btn) {
+  if (!confirm('Deseja excluir este item?')) return;
+  await deleteDoc(doc(db, col, id));
+  showToast('Item excluído!');
+  if (col === 'clients') loadClients();
+  else if (col === 'locations') loadLocations();
+  else loadServices();
+};
+
+// ── INIT ──
+await loadClients();
+await loadLocations();
+await loadServices();
+</script>
 </body>
 </html>
